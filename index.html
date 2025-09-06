@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Burn After Reading</title>
+  <style>
+    body { background:#121212; color:#e0e0e0; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+    textarea { width:300px; height:120px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px; padding:10px; margin-bottom:10px; }
+    button { padding:10px 20px; border-radius:6px; border:1px solid #333; background:#1e1e1e; color:#fff; cursor:pointer; }
+    button:hover { background:#2196f3; border-color:#2196f3; }
+    .note { margin-top:20px; padding:15px; background:#1e1e1e; border:1px solid #333; border-radius:8px; max-width:400px; display:none; }
+  </style>
+</head>
+<body>
+  <h1>🔥 Burn After Reading</h1>
+  <textarea id="note" placeholder="Type your secret..."></textarea><br>
+  <button onclick="createLink()">Create Link</button>
+  <div id="linkBox"></div>
+  <div class="note" id="noteBox"></div>
+
+  <script>
+    function createLink() {
+      const note = document.getElementById("note").value.trim();
+      if (!note) return alert("Type something!");
+      const encoded = btoa(note); // basic encoding (replace with AES for real use)
+      const link = `${window.location.origin}${window.location.pathname}#${encoded}`;
+      document.getElementById("linkBox").innerHTML = 
+        `<p>Share this link (works once):</p><a href="${link}">${link}</a>`;
+    }
+
+    window.onload = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const decoded = atob(hash);
+        document.getElementById("noteBox").style.display = "block";
+        document.getElementById("noteBox").innerText = decoded;
+        history.replaceState(null, null, " "); // remove hash so it can’t reload
+      }
+    };
+  </script>
+</body>
+</html>
