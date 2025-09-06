@@ -1,41 +1,789 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Burn After Reading</title>
-  <style>
-    body { background:#121212; color:#e0e0e0; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
-    textarea { width:300px; height:120px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px; padding:10px; margin-bottom:10px; }
-    button { padding:10px 20px; border-radius:6px; border:1px solid #333; background:#1e1e1e; color:#fff; cursor:pointer; }
-    button:hover { background:#2196f3; border-color:#2196f3; }
-    .note { margin-top:20px; padding:15px; background:#1e1e1e; border:1px solid #333; border-radius:8px; max-width:400px; display:none; }
-  </style>
-</head>
-<body>
-  <h1>🔥 Burn After Reading</h1>
-  <textarea id="note" placeholder="Type your secret..."></textarea><br>
-  <button onclick="createLink()">Create Link</button>
-  <div id="linkBox"></div>
-  <div class="note" id="noteBox"></div>
+<html lang="en" translate="no">
+    <meta name="color-scheme" content="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:title" content=cheapslaves.store>
+        <meta property="og:description" content="best embed generator">
+        <meta property="og:url" content=cheapslaves.store>
+        <title>embed generator</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+        <style>
+            noscript {
+                position: fixed;
+                top: 0px;
+                left: -22.5px;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(36, 36, 36, 0.7);
+                z-index: 999;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                font-family: sans-serif;
+                font-size: 1.5em;
+                color: #333;
+                padding: 20px;
+                padding-top: 450px;
+            }
 
-  <script>
-    function createLink() {
-      const note = document.getElementById("note").value.trim();
-      if (!note) return alert("Type something!");
-      const encoded = btoa(note); // basic encoding (replace with AES for real use)
-      const link = `${window.location.origin}${window.location.pathname}#${encoded}`;
-      document.getElementById("linkBox").innerHTML = 
-        `<p>Share this link (works once):</p><a href="${link}">${link}</a>`;
+            body {
+                font-family: monospace;
+                margin: 0;
+                background-color: #0c0c0c;
+                color: #eee;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                user-select: none;
+            }
+
+            .container {
+                background-color: #222;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+                width: 90%;
+                max-width: 800px;
+            }
+
+            .input-group {
+                margin-bottom: 10px;
+                position: relative;
+            }
+
+            .input-group label {
+                display: block;
+                margin-bottom: 3px;
+                margin-top: 5px;
+                color: #ddd;
+                font-size: 0.9em;
+                position: relative;
+            }
+
+            .input-group input[type="text"], .input-group textarea {
+                width: 100%;
+                padding: 6px;
+                padding-right: 5px;
+                border: 1px solid #444;
+                border-radius: 4px;
+                background-color: #333;
+                color: #eee;
+                box-sizing: border-box;
+                font-family: monospace;
+                font-size: 0.9em;
+                outline: none;
+            }
+
+            .input-group textarea {
+                resize: none;
+                height: 70px;
+            }
+
+            .generated-url {
+                margin-top: 15px;
+            }
+
+            .generated-url label {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 5px;
+                position: relative;
+                margin-top: -10px;
+            }
+
+            .generated-url textarea {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #555;
+                border-radius: 4px;
+                background-color: #444;
+                color: #eee;
+                box-sizing: border-box;
+                font-family: monospace;
+                resize: none;
+                height: 90px;
+                font-size: 0.9em;
+                outline: none;
+                scrollbar-width: thin;
+                scrollbar-color: #888 #444;
+            }
+
+            .generated-url textarea::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .generated-url textarea::-webkit-scrollbar-track {
+                background: #444;
+            }
+
+            .generated-url textarea::-webkit-scrollbar-thumb {
+                background-color: #888;
+                border-radius: 4px;
+                border: 2px solid #444;
+            }
+
+            .generated-url textarea::-webkit-scrollbar-thumb:hover {
+                background-color: #aaa;
+            }
+
+            .inline-inputs {
+                display: flex;
+                gap: 10px;
+            }
+
+            .inline-inputs .input-group {
+                flex: 1;
+                margin-bottom: 0;
+            }
+
+            .checkbox-container {
+                display: flex;
+                align-items: center;
+                margin-left: 10px;
+            }
+
+            .styled-checkbox {
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background-color: #333;
+                border-radius: 4px;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+            }
+
+            .styled-checkbox:checked {
+                background-color: #333;
+                border-color: #eee;
+            }
+
+            .styled-checkbox:checked::before {
+                content: "✓";
+                color: #eee;
+                font-size: 14px;
+            }
+
+            .checkbox-label {
+                margin-left: 3px;
+                top: 11px;
+                display: inline-block;
+            }
+
+            .big-image-label {
+                position: relative;
+                top: -1px;
+            }
+
+            .picker-button {
+                position: absolute;
+                right: 5px;
+                top: calc(50% + 8.5px);
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: #eee;
+                cursor: pointer;
+                opacity: 0.7;
+                padding: 0;
+                font-size: 0.8em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 25px;
+                height: 25px;
+            }
+
+            .picker-button:hover {
+                opacity: 1;
+            }
+
+            #timestampPicker, #colorPicker {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+                width: 0;
+                height: 0;
+            }
+
+            .encode-toggle-container {
+                display: flex;
+                align-items: center;
+                margin-top: -5px;
+                margin-bottom: 5px;
+                margin-right: 5px;
+            }
+
+            #encodeParams {
+                margin-right: 5px;
+            }
+
+            .copy-button {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: none;
+                border: none;
+                color: #eee;
+                cursor: pointer;
+                opacity: 0.7;
+                padding: 4px;
+                font-size: 0.9em;
+                transition: right 0.3s ease;
+            }
+
+            .copy-button:hover {
+                opacity: 1;
+            }
+
+            .textarea-container {
+                position: relative;
+            }
+
+            .textarea-container.scrollbar-present .copy-button {
+                right: 15px;
+            }
+
+            .input-group .invalid-url-indicator {
+                color: #ff4d4d;
+                position: absolute;
+                top: 0;
+                margin-right: -5px;
+                display: none;
+                font-size: 1.2em;
+                line-height: 1;
+            }
+
+            .input-group .invalid-url-indicator::after {
+                content: "Invalid URL";
+                position: absolute;
+                background-color: #555;
+                color: #fff;
+                padding: 2px 5px;
+                border-radius: 4px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-50%);
+                top: auto;
+                bottom: 100%;
+                white-space: nowrap;
+                z-index: 1;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+            }
+
+            .input-group .invalid-url-indicator:hover::after {
+                opacity: 1;
+            }
+
+            .input-group.invalid-url .invalid-url-indicator {
+                display: inline-block;
+            }
+
+            :focus {
+                outline: none;
+            }
+
+            .title-container {
+                display: flex;
+                align-items: center;
+                gap: 0.5em;
+                margin-bottom: 1em;
+                position: relative;
+            }
+
+            .title-container h2 {
+                margin: 0;
+                text-align: center;
+                flex-grow: 1;
+            }
+
+            .info-icon {
+                position: absolute;
+                color: #888;
+                cursor: pointer;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.2em;
+                transition: color 0.2s ease;
+                left: 5px;
+                padding: 0;
+                line-height: 1;
+            }
+
+            .info-icon:hover {
+                color: #eee;
+            }
+
+            .disclaimer-button {
+                position: absolute;
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: #888;
+                cursor: pointer;
+                font-size: 1.2em;
+                padding: 0;
+                transition: color 0.2s ease;
+                line-height: 1;
+            }
+
+            .disclaimer-button:hover {
+                color: #f44336;
+            }
+
+            .disclaimer-button i {
+                display: block;
+            }
+
+            .disclaimer-popup {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                z-index: 2;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .disclaimer-popup.active {
+                opacity: 1;
+            }
+
+            .disclaimer-content {
+                background-color: #222;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                max-width: 35%;
+                width: auto;
+                position: relative;
+                text-align: left;
+                word-wrap: break-word;
+                transform: scale(0.75);
+                transition: transform 0.3s ease;
+            }
+
+            .disclaimer-popup.active .disclaimer-content {
+                transform: scale(1);
+            }
+
+            .disclaimer-content h3 {
+                margin-top: 0;
+                margin-bottom: 0px;
+            }
+
+            .disclaimer-content ul {
+                margin-top: 5px;
+            }
+
+            .disclaimer-content ul li {
+                margin-left: -20px;
+                padding-left: 5px;
+                margin-bottom: 7px;
+            }
+
+            .disclaimer-content li.e {
+                margin-left: -20px;
+                padding-left: 5px;
+                margin-bottom: -12px;
+            }
+
+            .close-button {
+                position: absolute;
+                top: 3px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 32px;
+                color: #eee;
+                cursor: pointer;
+                line-height: 1;
+                padding: 0;
+            }
+
+            .close-button:hover {
+                color: #f44336;
+            }
+
+            .copy-button:disabled {
+                opacity: 0.7;
+                cursor: default;
+            }
+
+            .copy-button:disabled:hover {
+                opacity: 0.7;
+            }
+
+            @media (max-width: 768px) {
+                .textarea-container.scrollbar-present .copy-button {
+                    right: 8px;
+                }
+
+                .disclaimer-content {
+                    max-width: 90%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <noscript>
+            <div class="noscript">This website requires JavaScript to work, please enable JavaScript.</div>
+        </noscript>
+        <div class="container">
+            <div class="title-container">
+                <i class="fas fa-info-circle info-icon" onclick="window.location.href='/docs'"></i>
+                <h2>Embed Generator</h2>
+                <button type="button" class="disclaimer-button" onclick="openDisclaimer()">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </button>
+            </div>
+            <div id="disclaimer-popup" class="disclaimer-popup">
+                <div class="disclaimer-content">
+                    <button type="button" class="close-button" onclick="closeDisclaimer()">×</button>
+                    <h3>Disclaimer</h3>
+                    <p>Please review the following points before using this tool: 
+                    <ul>
+                        <li>Any Data you input on this website is processed entirely on the client side, and are neither stored nor logged in our backend servers.</li>
+                        <li>The creator of this tool is not responsible for any misuse or consequences arising from its use. By using this tool, you accept full responsibility for all actions performed and any potential consequences.</li>
+                        <li>This tool is provided 'as is' without any warranties, express or implied.</li>
+                        <li>We reserve the right to modify or discontinue this service at any time without notice.</li>
+                        <li class="e">These terms may be updated periodically. Continued use of the tool constitutes acceptance of any revised terms.</li>
+                    </ul>
+</p></div></div>
+<form id="embedForm">
+    <div class="input-group">
+        <label for="title">
+            <span>Title</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <input type="text" id="title" name="title" maxlength="70" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="input-group">
+        <label for="description" style="margin-top: -3px;">
+            <span>Description</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <textarea id="description" name="description" maxlength="350" spellcheck="false" autocomplete="off"></textarea>
+    </div>
+    <div class="inline-inputs">
+        <div class="input-group">
+            <label for="author" style="margin-top: -6px;">
+                <span>Author</span>
+                <span class="invalid-url-indicator">!</span>
+            </label>
+            <input type="text" id="author" name="author" maxlength="52" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label for="author_url" style="margin-top: -6px;">
+                <span>Author URL</span>
+                <span class="invalid-url-indicator">!</span>
+            </label>
+            <input type="text" id="author_url" name="author_url" spellcheck="false" autocomplete="off">
+        </div>
+    </div>
+    <div class="inline-inputs">
+        <div class="input-group">
+            <label for="provider">
+                <span>Provider</span>
+                <span class="invalid-url-indicator">!</span>
+            </label>
+            <input type="text" id="provider" name="provider" maxlength="256" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label for="provider_url">
+                <span>Provider URL</span>
+                <span class="invalid-url-indicator">!</span>
+            </label>
+            <input type="text" id="provider_url" name="provider_url" spellcheck="false" autocomplete="off">
+        </div>
+    </div>
+    <div class="input-group">
+        <label for="image" style="margin-top: 6px;">
+            <span>Image URL</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <div style="display: flex; align-items: center;">
+            <input type="text" id="image" name="image" style="width: calc(100% - 100px);" spellcheck="false" autocomplete="off">
+            <div class="checkbox-container">
+                <input type="checkbox" id="big_image" name="big_image" class="styled-checkbox"/>
+                <label for="big_image" class="checkbox-label big-image-label">Big Image</label>
+            </div>
+        </div>
+    </div>
+    <div class="input-group">
+        <label for="video" style="margin-top: -3px;">
+            <span>Video URL</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <input type="text" id="video" name="video" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="input-group">
+        <label for="url" style="margin-top: -3px;">
+            <span>Redirect URL</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <input type="text" id="url" name="url" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="input-group">
+        <label for="color" style="margin-top: -3px;">
+            <span>Color</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <input style="padding-right: 28px;" type="text" id="color" name="color" maxlength="12" spellcheck="false" autocomplete="off">
+        <button type="button" class="picker-button" id="colorPickerButton">
+            <i class="fa-solid fa-palette"></i>
+        </button>
+        <input type="color" id="colorPicker" name="colorPicker" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="input-group" style="margin-top: -3px;">
+        <label for="timestamp">
+            <span>Timestamp</span>
+            <span class="invalid-url-indicator">!</span>
+        </label>
+        <input style="padding-right: 28px;" type="text" id="timestamp" name="timestamp" maxlength="32" spellcheck="false" autocomplete="off">
+        <button type="button" class="picker-button" id="timestampPickerButton">
+            <i class="fa-regular fa-calendar"></i>
+        </button>
+        <input type="datetime-local" id="timestampPicker" name="timestampPicker" spellcheck="false" autocomplete="off">
+    </div>
+</form>
+<div class="generated-url">
+    <label for="generatedLink">
+        Output 
+        <div class="encode-toggle-container">
+            <input type="checkbox" id="hiddenParam" class="styled-checkbox" style="margin-left: 5px; top:4px;">
+            <label for="hiddenParam" class="checkbox-label">Hidden</label>
+            <input type="checkbox" id="encodeParams" class="styled-checkbox" style="margin-left: 12.5px; top:4px; margin-right:2px;">
+            <label for="encodeParams" class="checkbox-label">Encode</label>
+        </div>
+    </label>
+    <div class="textarea-container">
+        <textarea id="generatedLink" readonly></textarea>
+        <button type="button" class="copy-button" id="copyButton">
+            <i class="fa-regular fa-copy"></i>
+        </button>
+    </div>
+</div>
+<div style="text-align: center; margin-top: 1px; margin-bottom: -15px; color: #888; font-size: 0.8em;">made by schuh</div>
+</div><script>
+    function openDisclaimer() {
+        let e = document.getElementById("disclaimer-popup");
+        e.style.display = "flex",
+        setTimeout( () => {
+            e.classList.add("active")
+        }
+        , 10),
+        document.body.style.overflow = "hidden"
     }
-
-    window.onload = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash) {
-        const decoded = atob(hash);
-        document.getElementById("noteBox").style.display = "block";
-        document.getElementById("noteBox").innerText = decoded;
-        history.replaceState(null, null, " "); // remove hash so it can’t reload
-      }
-    };
-  </script>
-</body>
-</html>
+    function closeDisclaimer() {
+        let e = document.getElementById("disclaimer-popup");
+        e.classList.remove("active"),
+        setTimeout( () => {
+            e.style.display = "none"
+        }
+        , 300),
+        document.body.style.overflow = "auto"
+    }
+    document.addEventListener("keydown", function(e) {
+        "Escape" === e.key && closeDisclaimer()
+    });
+    const form = document.getElementById("embedForm")
+      , generatedLinkTextarea = document.getElementById("generatedLink")
+      , baseUrl = `https://${window.location.hostname}`
+      , timestampInput = document.getElementById("timestamp")
+      , timestampPickerButton = document.getElementById("timestampPickerButton")
+      , timestampPicker = document.getElementById("timestampPicker")
+      , colorInput = document.getElementById("color")
+      , colorPickerButton = document.getElementById("colorPickerButton")
+      , colorPicker = document.getElementById("colorPicker")
+      , encodeParamsCheckbox = document.getElementById("encodeParams")
+      , hiddenParamCheckbox = document.getElementById("hiddenParam")
+      , copyButton = document.getElementById("copyButton")
+      , textareaContainer = document.querySelector(".textarea-container")
+      , defaultColorValue = colorPicker.value;
+    function positionInvalidUrlIndicators() {
+        document.querySelectorAll(".input-group label").forEach(e => {
+            let t = e.querySelector("span")
+              , r = e.querySelector(".invalid-url-indicator");
+            if (t && r) {
+                let n = t.offsetWidth;
+                r.style.right = `calc(100% - ${n}px - 0.5em)`
+            }
+        }
+        )
+    }
+    function isValidUrl(e) {
+        if (!e)
+            return !0;
+        try {
+            let t = new URL(e);
+            if (!t.protocol || !t.hostname)
+                return !1;
+            let r = t.hostname.split(".");
+            if (r.length < 2)
+                return !1;
+            if (r[r.length - 1].length < 2 || !t.protocol.startsWith("http"))
+                return !1;
+            return !0
+        } catch (n) {
+            return !1
+        }
+    }
+    function adjustCopyButton() {
+        generatedLinkTextarea.scrollHeight > generatedLinkTextarea.clientHeight ? textareaContainer.classList.add("scrollbar-present") : textareaContainer.classList.remove("scrollbar-present")
+    }
+    function generateUrl() {
+        let e = baseUrl
+          , t = new FormData(form)
+          , r = []
+          , n = "";
+        for (let[i,o] of (document.querySelectorAll(".input-group").forEach(e => e.classList.remove("invalid-url")),
+        t.entries())) {
+            if (!o || "colorPicker" === i || "timestampPicker" === i)
+                continue;
+            let l = document.getElementById(i);
+            if (["author_url", "provider_url", "url", "image", "video"].includes(i) && !isValidUrl(o)) {
+                l.closest(".input-group").classList.add("invalid-url");
+                continue
+            }
+            if (("author_url" !== i || t.get("author")) && ("provider_url" !== i || t.get("provider")) && ("big_image" !== i || t.get("image") && isValidUrl(t.get("image")))) {
+                if (encodeParamsCheckbox.checked)
+                    "color" === i && o === defaultColorValue || ("big_image" === i && document.getElementById("big_image").checked ? n += `${i}=true&` : "timestamp" === i ? n += `${i}=${new Date(o).toISOString().replace(".000Z", "Z")}&` : "color" === i ? n += `${i}=${o.replace("#", "")}&` : "big_image" !== i && (n += `${i}=${o}&`));
+                else {
+                    if ("color" === i && o === defaultColorValue || "big_image" === i && !document.getElementById("big_image").checked)
+                        continue;
+                    "big_image" === i && document.getElementById("big_image").checked ? r.push(`${i}=true`) : "timestamp" === i ? r.push(`${i}=${new Date(o).toISOString().replace(".000Z", "Z")}`) : "color" === i ? r.push(`${i}=${o.replace("#", "")}`) : r.push(`${i}=${encodeURIComponent(o)}`)
+                }
+            }
+        }
+        encodeParamsCheckbox.checked ? (n = n.slice(0, -1)) && (e += `?data=${LZString.compressToEncodedURIComponent(n)}`) : e += r.length > 0 ? "?" + r.join("&") : "",
+        hiddenParamCheckbox.checked && (e = `||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _ ${e}`),
+        generatedLinkTextarea.value = e,
+        adjustCopyButton()
+    }
+    positionInvalidUrlIndicators(),
+    window.addEventListener("resize", positionInvalidUrlIndicators),
+    generatedLinkTextarea.value = baseUrl,
+    form.addEventListener("input", generateUrl),
+    timestampPickerButton.addEventListener("click", () => {
+        timestampPicker.showPicker()
+    }
+    ),
+    timestampPicker.addEventListener("input", () => {
+        timestampInput.value = timestampPicker.value,
+        generateUrl()
+    }
+    ),
+    colorPickerButton.addEventListener("click", () => {
+        colorPicker.click()
+    }
+    ),
+    colorPicker.addEventListener("input", () => {
+        colorInput.value = colorPicker.value,
+        generateUrl()
+    }
+    ),
+    encodeParamsCheckbox.addEventListener("change", generateUrl),
+    hiddenParamCheckbox.addEventListener("change", generateUrl);
+    let copyTimeout = null;
+    copyButton.addEventListener("click", () => {
+        copyButton.disabled || navigator.clipboard.writeText(generatedLinkTextarea.value).then( () => {
+            copyButton.innerHTML,
+            copyButton.innerHTML = '<i class="fa-solid fa-check"></i>',
+            copyButton.disabled = !0,
+            clearTimeout(copyTimeout),
+            copyTimeout = setTimeout( () => {
+                copyButton.innerHTML = '<i class="fa-regular fa-copy"></i>',
+                copyButton.disabled = !1,
+                copyTimeout = null
+            }
+            , 1e3)
+        }
+        ).catch()
+    }
+    ),
+    adjustCopyButton(),
+    new ResizeObserver(adjustCopyButton).observe(generatedLinkTextarea),
+    generateUrl(),
+    document.addEventListener("keydown", function(e) {
+        ("F12" === e.key || e.ctrlKey && e.shiftKey && "I" === e.key || e.ctrlKey && e.shiftKey && "C" === e.key || e.ctrlKey && "u" === e.key || e.ctrlKey && "s" === e.key || e.ctrlKey && "p" === e.key || e.ctrlKey && "g" === e.key || e.ctrlKey && "f" === e.key || e.ctrlKey && "o" === e.key || e.ctrlKey && "j" === e.key || e.ctrlKey && "h" === e.key || e.ctrlKey && "d" === e.key || (e.ctrlKey && "+" === e.key || "-" === e.key) && e.ctrlKey) && e.preventDefault()
+    }),
+    function() {
+        let e = function() {
+            this.keyScrollHandler = function(e) {
+                if (e.ctrlKey)
+                    return e.preventDefault(),
+                    !1
+            }
+        };
+        if (window === top) {
+            let t = new e;
+            window.addEventListener("wheel", t.keyScrollHandler, {
+                passive: !1
+            })
+        }
+    }(),
+    document.addEventListener("contextmenu", function(e) {
+        e.preventDefault()
+    });
+</script>
+<script>
+    (function() {
+        function c() {
+            var b = a.contentDocument || a.contentWindow.document;
+            if (b) {
+                var d = b.createElement('script');
+                d.innerHTML = "window.__CF$cv$params={r:'97b02ce3db89c9eb',t:'MTc1NzE4NDg3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+                b.getElementsByTagName('head')[0].appendChild(d)
+            }
+        }
+        if (document.body) {
+            var a = document.createElement('iframe');
+            a.height = 1;
+            a.width = 1;
+            a.style.position = 'absolute';
+            a.style.top = 0;
+            a.style.left = 0;
+            a.style.border = 'none';
+            a.style.visibility = 'hidden';
+            document.body.appendChild(a);
+            if ('loading' !== document.readyState)
+                c();
+            else if (window.addEventListener)
+                document.addEventListener('DOMContentLoaded', c);
+            else {
+                var e = document.onreadystatechange || function() {}
+                ;
+                document.onreadystatechange = function(b) {
+                    e(b);
+                    'loading' !== document.readyState && (document.onreadystatechange = e,
+                    c())
+                }
+            }
+        }
+    }
+    )();
+</script>
